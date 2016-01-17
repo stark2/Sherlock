@@ -11,8 +11,7 @@ library(dplyr)
 setwd("/home/david/Data/Sherlock/r-sherlock")
 
 source("geoip.R")
-
-geoobj <- freegeoip('184.26.100.110')
+#geoobj <- freegeoip('184.26.100.110')
 #geoobj$ip
 #class(geoobj)
 
