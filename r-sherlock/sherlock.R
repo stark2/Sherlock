@@ -8,7 +8,14 @@ rm(list=ls())
 library(jsonlite)
 library(dplyr)
 
+library(Rcpp)
+library(inline)
+
 setwd("/home/david/Data/Sherlock/r-sherlock")
+
+sourceCpp("resolver.cpp")
+
+resolved_ip <- gethostbyname("dds.ec")
 
 source("geoip.R")
 #geoobj <- freegeoip('184.26.100.110')
@@ -16,7 +23,11 @@ source("geoip.R")
 #class(geoobj)
 
 # load JSON file into a data.frame
-#json_file <- stream_in(file("events-mssi.txt"))   # JSON (RFC 4627)
+json_file <- stream_in(file("events-mssi.txt"))   # JSON (RFC 4627)
+json_data <- flatten(json_file)
+head(json_data$source.fqdn)
+json_data$source.ip <- lapply(json_data$source.fqdn, gethostbyname)
+
 #class(json_file)
 #summary(json_file)
 #View(json_file)
