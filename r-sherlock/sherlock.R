@@ -35,8 +35,12 @@ json_data <- head(json_data, 200)
 json_data$source.ip <- lapply(json_data$source.fqdn, gethostbyname)
 # remove entries without resolved IP addresses 
 json_data <- json_data[!json_data$source.ip=='character(0)',]
-json_data <- head(json_data, 100)
 dim(json_data)
+json_data <- head(json_data, 100)
+class(json_data$source.ip)
+class(json_data)
+dim(json_data)
+write.table(json_data, file = "json_data.csv", row.names=FALSE, na="", col.names=FALSE, sep=",")
 View(json_data)
 
 #class(json_file)

@@ -32,11 +32,10 @@ std::vector< std::string > gethostbyname(std::string hostname) {
     
     // example of using a c-ish while loop to iterate through possible multiple resoponses
     
-    while (destination != end) {
+    //while (destination != end) {
       endpoint = *destination++;
       addresses.push_back(endpoint.address().to_string());
-      
-    }
+    //}
     
   } catch(boost::system::system_error& error) {
     message( "Hostname not found" );
@@ -72,11 +71,11 @@ std::vector< std::string > gethostbyaddr(std::string ipv4) {
     boost::asio::ip::tcp::resolver::iterator destination = resolver.resolve(endpoint);
     boost::asio::ip::tcp::resolver::iterator end;
     
-    // example of using a for-loop to iterate through possible multiple resoponses
+    // example of using a for-loop to iterate through possible multiple responses
     
-    for (int i=1; destination != end; destination++, i++) {
+    //for (int i=1; destination != end; destination++, i++) {
       hostnames.push_back(destination->host_name());
-    }
+    //}
     
   } catch(boost::system::system_error& error) {
     message( "Address not found" );
