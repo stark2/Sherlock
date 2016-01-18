@@ -25,8 +25,19 @@ source("geoip.R")
 # load JSON file into a data.frame
 json_file <- stream_in(file("events-mssi.txt"))   # JSON (RFC 4627)
 json_data <- flatten(json_file)
+# remove entries without DNS 
+json_data <- json_data[!is.na(json_data$source.fqdn),]
+dim(json_data)
 head(json_data$source.fqdn)
+
+# take 100 to minimize the number of DNS entries to resolve
+json_data <- head(json_data, 200)
 json_data$source.ip <- lapply(json_data$source.fqdn, gethostbyname)
+# remove entries without resolved IP addresses 
+json_data <- json_data[!json_data$source.ip=='character(0)',]
+json_data <- head(json_data, 100)
+dim(json_data)
+View(json_data)
 
 #class(json_file)
 #summary(json_file)
