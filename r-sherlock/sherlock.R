@@ -1,6 +1,5 @@
 # install.packages("rjson")
 # install.packages("dplyr")
-
 # clean R environment
 rm(list=ls())
 
@@ -10,6 +9,8 @@ library(dplyr)
 
 library(Rcpp)
 library(inline)
+
+library(data.table)
 
 setwd("/home/david/Data/Sherlock/r-sherlock")
 
@@ -23,25 +24,46 @@ source("geoip.R")
 #class(geoobj)
 
 # load JSON file into a data.frame
-json_file <- stream_in(file("events-mssi.txt"))   # JSON (RFC 4627)
+json_file <- stream_in(file("events-mssi.txt"))   # JSON (RFC 4627), Imported 108491 records. Simplifying into dataframe...
 json_data <- flatten(json_file)
 # remove entries without DNS 
 json_data <- json_data[!is.na(json_data$source.fqdn),]
-dim(json_data)
-head(json_data$source.fqdn)
+dim(json_data) # [1] 98359    15
 
 # take 100 to minimize the number of DNS entries to resolve
-json_data <- head(json_data, 200)
+#json_data <- head(json_data, 200)
 json_data$source.ip <- lapply(json_data$source.fqdn, gethostbyname)
-# remove entries without resolved IP addresses 
+#remove entries without resolved IP addresses 
 json_data <- json_data[!json_data$source.ip=='character(0)',]
-dim(json_data)
-json_data <- head(json_data, 100)
+#json_data$source.ip <- lapply(json_data$source.ip, as.character)
+new_data <- flatten(new_data)
+new_data <- new_data[!new_data$source.ip=='0.0.0.0',]   # [1] 62824    15
+new_data$source.ip <- lapply(new_data$source.ip, paste, collapse="")
+new_data$source.ip <- vapply(new_data$source.ip, paste, collapse = "", character(1L))
+#saveRDS(new_data, "threat_data.rds")
+#new_data <- readRDS("threat_data.rds")
+
+dt <- data.table(new_data)
+class(dt$source.ip)
+write.table(dt, file = "threat_data.csv", row.names=FALSE, na="", col.names=FALSE, sep=",")
+
+
+max.len <- lapply(new_data$source.ip, length)
+as.character(new_data$source.ip)
+dim(new_data)
+class(new_data$source.ip)
+write.table(new_data, file = "threat_data.csv", row.names=FALSE, na="", col.names=FALSE, sep=",")
+
+dim(json_data) # [1] 63081    15
+#json_data <- head(json_data, 100)
 class(json_data$source.ip)
 class(json_data)
 dim(json_data)
 write.table(json_data, file = "json_data.csv", row.names=FALSE, na="", col.names=FALSE, sep=",")
 View(json_data)
+
+# save(list = ls(all = TRUE), file= "all.RData")
+# local({ load("all.RData") ls() })
 
 #class(json_file)
 #summary(json_file)
