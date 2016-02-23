@@ -29,7 +29,7 @@ json_data <- flatten(json_file)
 # remove entries without DNS 
 json_data <- json_data[!is.na(json_data$source.fqdn),]
 dim(json_data) # [1] 98359    15
-
+View(json_data)
 # take 100 to minimize the number of DNS entries to resolve
 #json_data <- head(json_data, 200)
 json_data$source.ip <- lapply(json_data$source.fqdn, gethostbyname)
@@ -95,3 +95,131 @@ View(t_join)
 
 geo_data <- lapply(t_join$host.ip, freegeoip)
 View(geo_data)
+
+
+library(maps)       # Provides functions that let us plot the maps
+library(mapdata)    # Contains the hi-resolution points that mark out the countries.
+library(sp)
+
+setwd("/home/david/Data/Sherlock/r-sherlock")
+
+source("geoip.R")
+
+my_coordinates = freegeoip('72.167.232.197')
+
+map('worldHires',c('Switzerland'))
+
+points(my_coordinates$longitude, my_coordinates$latitude, col=2, pch=19)
+
+#map('worldHires')
+map('world2Hires')
+
+#threat_data <- read.csv(file="threat_data_15666.csv", header=FALSE, sep=",", stringsAsFactors=FALSE)
+#colnames(threat_data) <- c("raw", "classification_type", "malware_name", "feed_name", "feed_url", "feed_accuracy", "source_fqdn", "source_ip", "source_network", "source_url", "source_asn", "source_reverse_dns", "time_observation", "time_source", "event_description_text")
+
+threat_data <- read.csv(file="threat_data_15652_ipinfo.csv", header=FALSE, sep=",", stringsAsFactors=TRUE)
+colnames(threat_data) <- c("source_ip", "locale", "country", "code", "state", "city", "zip", "county", "latitude", "longitude", "status")
+
+View(threat_data)
+
+#threat_data <- tail(threat_data, 20)
+
+#threat_data_coordinates <- lapply(threat_data$source_ip, freegeoip)
+#threat_data_frame <- data.frame(matrix(unlist(threat_data_coordinates), nrow=20, byrow=T), stringsAsFactors=FALSE)
+
+View(threat_data_frame)
+
+map('worldHires')
+points(threat_data$longitude, threat_data$latitude, col=threat_data$country, pch=19)
+
+
+
+
+rm(list=ls())
+
+library(maps)
+library(ggplot2)
+
+threat_data <- read.csv(file="threat_data_15652_ipinfo.csv", header=FALSE, sep=",", stringsAsFactors=TRUE)
+colnames(threat_data) <- c("source_ip", "locale", "country", "code", "state", "city", "zip", "county", "latitude", "longitude", "status")
+
+world_map <- map_data("world")
+#Switzerland <- subset(world_map, world_map$region=="Switzerland")
+
+p <- ggplot() + coord_fixed() + xlab("") + ylab("")
+base_world_messy <- p + geom_polygon(data=world_map, aes(x=long, y=lat, group=group), colour="black", fill="light green")
+cleanup <- theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_rect(fill = 'white', colour = 'white'), 
+        axis.line = element_line(colour = "white"), legend.position="none",
+        axis.ticks=element_blank(), axis.text.x=element_blank(),
+        axis.text.y=element_blank())
+
+base_world <- base_world_messy + cleanup
+
+map_data <-base_world + geom_point(data=threat_data, aes(x=longitude, y=latitude), colour="white", fill="red", pch=21, size=2, alpha=I(0.7))
+map_data
+
+
+library(rworldmap)
+
+library(mapproj)
+library(rworldxtra)
+
+newmap <- getMap(resolution = "high")
+points(threat_data$longitude, threat_data$latitude, col = "red", cex = .6)
+
+
+
+library(rgbif)
+install.packages("rgbif")
+Dan_chr=occurrencelist(sciname = 'Danaus chrysippus',
+                       coordinatestatus = TRUE,
+                       maxresults = 1000,
+                       latlongdf = TRUE, removeZeros = TRUE)
+library(ggmap)
+library(ggplot2)
+wmap1 = qmap('India',zoom=2)
+wmap1 +
+  geom_jitter(data = Dan_chr,
+              aes(decimalLongitude, decimalLatitude),
+              alpha=0.6, size = 4, color = "red") +
+  opts(title = "Danaus chrysippus")
+
+
+### GGMAP #######################################################################
+
+rm(list=ls())
+
+library(ggmap)
+library(png)
+setwd("/home/david/Data/Sherlock/r-sherlock")
+
+threat_data <- read.csv(file="threat_data_15652_ipinfo.csv", header=FALSE, sep=",", stringsAsFactors=FALSE)
+colnames(threat_data) <- c("source_ip", "locale", "country", "code", "state", "city", "zip", "county", "latitude", "longitude", "status")
+#View(threat_data)
+#stat <- as.data.frame(table(threat_data$country))
+#write.table(stat, file = "country_stat.csv", row.names=FALSE, na="", col.names=FALSE, sep=",")
+
+map <- get_map(location = 'North America', zoom = 4)
+map <- get_map(location = 'South America', zoom = 4)
+map <- get_map(location = 'Europe', zoom = 4)
+map <- get_map(location = 'Asia', zoom = 4)
+map <- get_map(location = 'Africa', zoom = 4)
+map <- get_map(location = 'Australia', zoom = 4)
+
+map <- get_map(location = 'United States', zoom = 4)
+map <- get_map(location = 'China', zoom = 4)
+map <- get_map(location = 'Germany', zoom = 6)
+map <- get_map(location = 'Russia', zoom = 4)
+map <- get_map(location = 'Moscow', zoom = 6)
+map <- get_map(location = 'France', zoom = 6)
+map <- get_map(location = 'Switzerland', zoom = 10)
+map <- get_map(location = 'Hong Kong', zoom = 11)
+map <- get_map(location = 'Netherlands', zoom = 8)
+map <- get_map(location = 'United Kingdom', zoom = 6)
+map <- get_map(location = 'South Korea', zoom = 7)
+
+ggmap(map)
+
+TC <- ggmap(map) + geom_point(data=threat_data, alpha = .4, size = 8, aes(x = longitude, y = latitude), color='red') # + ggtitle("Threat")
+TC

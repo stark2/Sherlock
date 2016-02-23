@@ -4,6 +4,7 @@ freegeoip <- function(ip, format = ifelse(length(ip)==1,'list','dataframe'))
   {
     # a single IP address
     require(rjson)
+    Sys.sleep(3.2)
     url <- paste(c("http://freegeoip.net/json/", ip), collapse='')
     ret <- fromJSON(readLines(url, warn=FALSE))
     if (format == 'dataframe')
